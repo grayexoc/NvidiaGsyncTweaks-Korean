@@ -12,20 +12,20 @@ internal static class TweakRows
 {
     public static Element Build(Ctx c, TweakDef d)
     {
-        uint eff = c.Effective(d.Name, d.Default);
+        uint eff = c.Effective(d.Name, d.기본값);
         bool isBit = d.Kind == TweakKind.Bit;
 
         bool pending, custom;
         if (isBit)
         {
-            uint cur = c.EffectiveCurrent(d.Name, d.Default);
+            uint cur = c.EffectiveCurrent(d.Name, d.기본값);
             pending = (cur & d.BitMask) != (eff & d.BitMask);
-            custom = (eff & d.BitMask) != (d.Default & d.BitMask);
+            custom = (eff & d.BitMask) != (d.기본값 & d.BitMask);
         }
         else
         {
             pending = c.IsPending(d.Name);
-            custom = c.IsCustom(d.Name, d.Default);
+            custom = c.Is사용자 지정(d.Name, d.기본값);
         }
 
         Element editor = d.Kind switch
@@ -41,31 +41,31 @@ internal static class TweakRows
         };
 
         Action resetAction = isBit
-            ? () => c.Set(d, (eff & ~d.BitMask) | (d.Default & d.BitMask))
+            ? () => c.Set(d, (eff & ~d.BitMask) | (d.기본값 & d.BitMask))
             : () => c.Edit(d.Name, null);
 
         Element reset = custom || pending
-            ? HyperlinkButton("Reset", onClick: resetAction).AutomationName($"Reset {d.Title} to driver default")
+            ? HyperlinkButton("초기화", onClick: resetAction).AutomationName($"초기화 {d.Title} to driver default")
             : Empty();
 
         var control = HStack(12, reset, editor);
 
         var badges = new Element?[]
         {
-            pending ? Ui.Pill("Changed", "accent") : custom ? Ui.Pill("Custom", "neutral") : null,
+            pending ? Ui.Pill("변경됨", "accent") : custom ? Ui.Pill("사용자 지정", "neutral") : null,
             Ui.RiskPill(d.Risk),
         };
 
         var desc = d.Description + (d.Note is null ? "" : "  " + d.Note);
-        return Ui.SettingCard(d.Title, desc + $"  ·  default: {DefaultText(d)}", control, badges);
+        return Ui.SettingCard(d.Title, desc + $"  ·  default: {기본값Text(d)}", control, badges);
     }
 
-    private static string DefaultText(TweakDef d) => d.Kind switch
+    private static string 기본값Text(TweakDef d) => d.Kind switch
     {
-        TweakKind.Toggle => d.Default == d.OffValue ? "off" : "on",
-        TweakKind.Bit => (d.Default & d.BitMask) != 0 ? "on" : "off",
-        TweakKind.Choice => d.Choices?.FirstOrDefault(x => x.Value == d.Default)?.Label ?? $"0x{d.Default:X}",
-        _ => $"{d.Default / d.Scale:0.###}{(d.Unit.Length > 0 ? " " + d.Unit : "")}",
+        TweakKind.Toggle => d.기본값 == d.OffValue ? "off" : "on",
+        TweakKind.Bit => (d.기본값 & d.BitMask) != 0 ? "on" : "off",
+        TweakKind.Choice => d.Choices?.FirstOr기본값(x => x.Value == d.기본값)?.Label ?? $"0x{d.기본값:X}",
+        _ => $"{d.기본값 / d.Scale:0.###}{(d.Unit.Length > 0 ? " " + d.Unit : "")}",
     };
 
     private static Element ChoiceEditor(Ctx c, TweakDef d, uint eff)
@@ -74,7 +74,7 @@ internal static class TweakRows
         var labels = choices.Select(x => x.Label).ToList();
         int idx = -1;
         for (int i = 0; i < choices.Count; i++) if (choices[i].Value == eff) idx = i;
-        if (idx < 0) { labels.Add($"Custom (0x{eff:X})"); idx = labels.Count - 1; }
+        if (idx < 0) { labels.Add($"사용자 지정 (0x{eff:X})"); idx = labels.Count - 1; }
         return ComboBox(labels.ToArray(), idx, i => { if (i >= 0 && i < choices.Count) c.Set(d, choices[i].Value); })
             .AutomationName(d.Title)
             .MinWidth(220);
