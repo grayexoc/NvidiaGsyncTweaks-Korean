@@ -97,10 +97,10 @@ internal sealed class MainView : Component
             var request = new ElevatedRequest(gpu.KeyPath, changes, RestartDriver: true);
             var run = await Elevation.RunWorkerAsync(request.ToArguments());
 
-            if (run.Cancelled)
+            if (run.취소됨)
             {
                 setBusy(false);
-                setBanner(new Banner(BannerKind.Info, "Cancelled", "Administrator permission was not granted - nothing was changed."));
+                setBanner(new Banner(BannerKind.Info, "취소됨", "Administrator permission was not granted - nothing was changed."));
                 return;
             }
 
@@ -115,7 +115,7 @@ internal sealed class MainView : Component
             setBusy(false);
 
             string n = $"{changes.Count} change(s)";
-            string restorePoint = $" Restore point: {Path.GetFileName(backup)}";
+            string restorePoint = $" 복원 지점: {Path.GetFileName(backup)}";
             setBanner(run.Exit switch
             {
                 _ when !run.Launched => new Banner(BannerKind.Error, "Could not start the elevated helper", run.Error ?? "unknown error"),
@@ -148,12 +148,12 @@ internal sealed class MainView : Component
                 var parsed = RegistryStore.ParseRestoreFile(file);
                 if (parsed is null) throw new InvalidOperationException("This is not a restore point written by this app.");
                 if (!string.Equals(parsed.Value.Key, gpu.KeyPath, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidOperationException("This restore point belongs to a different adapter key:\n" + parsed.Value.Key);
+                    throw new InvalidOperationException("이 복원 지점은 다른 어댑터 키에 속합니다:\n" + parsed.Value.Key);
                 await ApplyAndRestartAsync(parsed.Value.Values.ToDictionary(k => k.Key, k => k.Value), "before-restore", clearEdits: false);
             }
             catch (Exception ex)
             {
-                setBanner(new Banner(BannerKind.Error, "Restore failed", ex.Message));
+                setBanner(new Banner(BannerKind.Error, "복원 실패", ex.Message));
             }
         }
 
@@ -174,11 +174,11 @@ internal sealed class MainView : Component
         Element body = page switch
         {
             "lfc" => LfcPage.Build(ctx),
-            "backups" => BackupsPage.Build(ctx, RequestRestore),
+            "backups" => 백업Page.Build(ctx, RequestRestore),
             _ => Catalog.Pages.FirstOrDefault(p => p.Tag == page) is { } tp ? TweakPageView.Build(ctx, tp) : LfcPage.Build(ctx),
         };
 
-        var navItems = new List<NavigationViewItemData> { NavItem("LFC / frame doubling", "Sync", "lfc") };
+        var navItems = new List<NavigationViewItemData> { NavItem("LFC / 프레임 더블링", "Sync", "lfc") };
         foreach (var p in Catalog.Pages) navItems.Add(NavItem(p.Title, p.Icon, p.Tag));
 
         bool canAct = gpu?.KeyPath is not null && gpu.Adapter is not null && !busy;
@@ -213,13 +213,13 @@ internal sealed class MainView : Component
             IsPaneToggleButtonVisible = false,
             IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
             OpenPaneLength = 260,
-            FooterMenuItems = [NavItem("Backups", "Save", "backups")],
+            FooterMenuItems = [NavItem("백업", "Save", "backups")],
         };
         nav = nav.Set(n => n.IsSettingsVisible = false);
 
         bool restoring = restoreFile is not null;
         var dialog = ContentDialog(
-            restoring ? "Restore this backup and restart the display driver?" : "Apply changes and restart the display driver?",
+            restoring ? "이 백업을 복원하고 디스플레이 드라이버를 다시 시작하시겠습니까?" : "Apply changes and restart the display driver?",
             VStack(10,
                 restoring
                     ? Body($"Restores the values saved in {Path.GetFileNameWithoutExtension(restoreFile!)}.").SemiBold()
@@ -235,7 +235,7 @@ internal sealed class MainView : Component
             primaryButtonText: restoring ? "Restore & restart driver" : "Apply & restart driver") with
         {
             IsOpen = askRestart,
-            CloseButtonText = "Cancel",
+            CloseButtonText = "취소",
             DefaultButton = ContentDialogButton.Close,
             OnClosed = r =>
             {
@@ -288,7 +288,7 @@ internal sealed class MainView : Component
             HStack(8,
                 verified
                     ? Ui.Pill($"Verified: NVAPI {gpu.NvApiDriverText} = registry {gpu.RegistryDriverVersion}", "success")
-                    : Ui.Pill(gpu.KeyPath is null ? "Registry key not found" : "Driver version does not match the registry key", "caution"),
+                    : Ui.Pill(gpu.KeyPath is null ? "레지스트리 키를 찾을 수 없음" : "Driver version does not match the registry key", "caution"),
                 gpu.NvApiAgreesWithPnp ? Ui.Pill("Key confirmed by NVAPI", "success") : null,
                 gpu.NvApiKeyPath is null ? Ui.Pill($"Found via {gpu.MatchMethod}", "neutral") : null)));
     }
@@ -299,8 +299,8 @@ internal sealed class MainView : Component
         Element status = busy
             ? HStack(12, ProgressRing().IsActive().Width(20).Height(20), Body(busyText))
             : hasPending
-                ? HStack(8, Ui.Pill($"{c.PendingCount} pending", "accent"), Ui.Muted("Applying restarts the display driver").VAlign(VerticalAlignment.Center))
-                : Ui.Muted("No pending changes");
+                ? HStack(8, Ui.Pill($"{c.PendingCount} pending", "accent"), Ui.Muted("적용하면 디스플레이 드라이버가 다시 시작됩니다.").VAlign(VerticalAlignment.Center))
+                : Ui.Muted("No 대기 중인 변경 사항");
 
         return Border(
                 Grid(
