@@ -49,8 +49,8 @@ internal static class Ui
 
     public static Element? RiskPill(TweakRisk risk) => risk switch
     {
-        TweakRisk.Caution => Pill("Use with care", "caution"),
-        TweakRisk.Experimental => Pill("Experimental", "critical"),
+        TweakRisk.Caution => Pill("주의해서 사용", "caution"),
+        TweakRisk.Experimental => Pill("실험적", "critical"),
         _ => null,
     };
 
@@ -86,7 +86,7 @@ internal static class Ui
     public static Element ElevatedButton(string label, Action onClick, bool enabled = true, bool accent = false)
     {
         var b = Button(label, onClick) with { ContentElement = HStack(8, ShieldIcon.Element(), TextBlock(label)) };
-        var e = b.AutomationName(label + " (asks for administrator permission)").IsEnabled(enabled);
+        var e = b.AutomationName(label + " (관리자 권한 요청)").IsEnabled(enabled);
         return accent ? e.ApplyStyle("AccentButtonStyle") : e;
     }
 }
