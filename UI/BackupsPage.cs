@@ -7,7 +7,7 @@ using static Microsoft.UI.Reactor.Factories;
 
 namespace NvidiaGsyncTweaks.UI;
 
-internal static class 백업Page
+internal static class BackupsPage
 {
     public static Element Build(Ctx c, Action<string> restore)
     {
@@ -22,14 +22,14 @@ internal static class 백업Page
                 File.GetLastWriteTime(f).ToString("f"),
                 HStack(8,
                     Button("Show", () => Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{f}\"") { UseShellExecute = true })),
-                    Ui.ElevatedButton("복원 & restart driver", () => restore(f), enabled: c.Gpu?.KeyPath is not null && c.Gpu.Adapter is not null && !c.Busy))).WithKey(f)).ToArray();
+                    Ui.ElevatedButton("Restore & restart driver", () => restore(f), enabled: c.Gpu?.KeyPath is not null && c.Gpu.Adapter is not null && !c.Busy))).WithKey(f)).ToArray();
 
         return VStack(16,
-            Ui.PageHeader("백업",
+            Ui.PageHeader("Backups",
                 "A restore point (.reg file) of every value this app manages is written automatically before each Apply. " +
                 "Restoring puts the values back exactly as they were - absent values are deleted again."),
             HStack(8,
-                Button("백업 폴더 열기", () =>
+                Button("Open backup folder", () =>
                 {
                     Directory.CreateDirectory(folder);
                     Process.Start(new ProcessStartInfo("explorer.exe", $"\"{folder}\"") { UseShellExecute = true });
