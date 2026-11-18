@@ -59,7 +59,7 @@ internal static class Catalog
 
     private static IReadOnlyList<TweakPage> BuildPages() =>
     [
-        new TweakPage("smooth", "Smoothing & flicker", "Brightness flicker on VRR panels comes from uneven frame times. These values control how the driver evens them out.", "\uE706",
+        new TweakPage("smooth", "스무딩 및 깜박임", "Brightness flicker on VRR panels comes from uneven frame times. These values control how the driver evens them out.", "\uE706",
         [
             new TweakGroup("Frame smoothing (deflicker)",
                 "The driver can hold back a flip by a few hundred microseconds so that alternating long / short frames become equally long. " +
@@ -78,7 +78,7 @@ internal static class Catalog
             ]),
         ]),
 
-        new TweakPage("vrr", "VRR behaviour", "When VRR is active, how monitors are detected, and the refresh limits the driver programs.", "Setting",
+        new TweakPage("vrr", "VRR 동작", "When VRR is active, how monitors are detected, and the refresh limits the driver programs.", "Setting",
         [
             new TweakGroup("When VRR is active",
                 null,
@@ -129,7 +129,7 @@ internal static class Catalog
             ]),
         ]),
 
-        new TweakPage("cursor", "Cursor & idle", "What happens on a VRR display while the game is not delivering frames (menus, loading screens, very low FPS).", "Pin",
+        new TweakPage("cursor", "커서 및 유휴 상태", "What happens on a VRR display while the game is not delivering frames (menus, loading screens, very low FPS).", "Pin",
         [
             new TweakGroup("Cursor updates while VRR is idle",
                 "VRR would normally freeze the screen until the next game frame arrives - including the mouse cursor. The driver can inject cursor-only refreshes instead.",
@@ -144,12 +144,12 @@ internal static class Catalog
             ]),
         ]),
 
-        new TweakPage("detect", "Smart detection", "Experimental: let the driver detect unstable frame times or slideshow-like content and react. Off by default - leave it off unless you want to experiment.", "Repair",
+        new TweakPage("detect", "스마트 감지", "Experimental: let the driver detect unstable frame times or slideshow-like content and react. Off by default - leave it off unless you want to experiment.", "Repair",
         [
             new TweakGroup("Detection",
                 "When detection triggers, the driver switches the panel to a constant maximum frame period instead of following every frame - a way to avoid flicker from chaotic frame times.",
             [
-                Pick("vrrSmartDetection", "Smart detection mode",
+                Pick("vrrSmartDetection", "스마트 감지 mode",
                      "Which detectors are active. The 'head mask' part is required for any visible effect.",
                      0, TweakRisk.Experimental,
                      new Choice(0, "Off (default)"),
