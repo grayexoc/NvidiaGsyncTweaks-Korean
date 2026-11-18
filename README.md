@@ -1,67 +1,67 @@
-# NVIDIA G-SYNC Tweaks
+# NVIDIA G-SYNC Tweaks — 한국어 소스 빌드
 
-**Stop your G-SYNC / VRR monitor from flipping between 60 Hz and 120 Hz** - the cause of annoying brightness flicker on high-refresh OLED monitors
-and of stutter at 60 FPS on 240 / 360 Hz panels - and tune the other hidden VRR settings of the NVIDIA driver, with a clear Windows 11 style interface.
+이 저장소는 NVIDIA 디스플레이 드라이버의 숨겨진 VRR/LFC 설정을 조회하고 조정하는 Windows 앱입니다. 이 한국어화 브랜치는 원본 기능 및 레지스트리 제어 로직을 유지하면서 사용자 인터페이스 문자열을 한국어로 번역했습니다.
 
-![NVIDIA G-SYNC Tweaks - LFC page](docs/images/lfc.png)
+## 한국어화 범위
 
-## The problem
+- LFC / 프레임 더블링 페이지
+- 스무딩 및 깜박임 설정
+- VRR 동작 및 모니터 감지
+- 커서 및 유휴 상태
+- 스마트 감지(실험적)
+- 백업, 복원, 관리자 권한 확인 및 오류 메시지
+- 설정 설명, 기본값, 상태 표시 및 위험도 표시
 
-On high-refresh monitors the NVIDIA driver starts *frame doubling* (LFC) around **58-65 FPS**, long before your monitor's real VRR minimum (usually 48 Hz).
-A game running at ~60 FPS then keeps jumping between 1x (60 Hz) and 2x (120 Hz). On OLED panels that shows up as flicker, on other panels as stutter. Frame-rate caps do not help,
-and lowering the monitor to 120 Hz avoids it but throws away the high refresh rate.
+NVIDIA, G-SYNC, VRR, LFC, Adaptive-Sync, DisplayPort, HDMI, DLSS, NVAPI, EDID 등 기술명과 드라이버 레지스트리 값 이름은 원문을 유지했습니다.
 
-The cause is a hidden driver setting, `vrrFrameSplitBehavior`. It was found and documented by u/PykeFeed in the
-[Reddit thread "[Fix] NVIDIA G-SYNC kicks in LFC at ~60 FPS instead of 48 on high-refresh OLEDs"](https://www.reddit.com/r/OLED_Gaming/comments/1xtaqjo/fix_nvidia_gsync_kicks_in_lfc_at_60_fps_instead/).
-This tool applies that fix for you - no registry editing - and shows what it will do to your monitor before you apply it.
+## 빌드 환경
 
-## Download and install
+원본 프로젝트의 대상 프레임워크는 \`.NET 10\` / Windows 10.0.22621.0이며, WinUI 3와 Microsoft.UI.Reactor를 사용합니다. Windows x64에서 빌드하는 것을 권장합니다.
 
-1. You need Windows 10 / 11 (x64), an NVIDIA GPU with the NVIDIA driver (tested with 621.12) and the **Windows App Runtime 2.x**
-   ([download from Microsoft](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads)).
-2. Download the zip from the [Releases page](https://github.com/Orbmu2k/NvidiaGsyncTweaks/releases), extract it anywhere and start `NvidiaGsyncTweaks.exe`.
+필요 항목:
+- Windows 10/11 x64
+- .NET 10 SDK
+- Windows App SDK / Windows App Runtime 2.x
+- 프로젝트 NuGet 패키지 복원 가능 환경
 
-No installer and no administrator rights are needed to start the app.
+## 빌드
 
-## Use it
+저장소 루트에서 PowerShell 또는 Developer PowerShell을 열고 실행합니다.
 
-1. Start the app. It finds your GPU and the driver's registry key by itself and shows what the driver does now.
-2. On the **LFC / frame doubling** page choose **Lowest multiplier (recommended)**. The preview shows what your monitor will do, using your max refresh rate and VRR minimum.
-3. Click **Apply & restart driver**. Windows asks for administrator permission (the shield on the button), your screens flicker for a few seconds, and the driver restarts - no reboot.
+\`\`\`powershell
+dotnet restore .\NvidiaGsyncTweaks.csproj
+dotnet build .\NvidiaGsyncTweaks.csproj -c Debug
+\`\`\`
 
-To check that it works, cap a game at 55 FPS: your monitor's refresh counter should show about **55 Hz** (before: about 110 Hz).
+릴리스용 Native AOT 게시:
 
-## What you can change
+\`\`\`powershell
+dotnet publish .\NvidiaGsyncTweaks.csproj -c Release -r win-x64
+\`\`\`
 
-| page | what it is for |
-|---|---|
-| **LFC / frame doubling** | The fix: when does the driver start doubling frames? NVIDIA default, lowest multiplier, or your own stickiness - with a live preview, a table for other refresh rates, how fast the frame-time estimate reacts, and the frame-generation pacing switch. |
-| **Smoothing & flicker** | How the driver evens out uneven frame times (a major cause of OLED VRR flicker). |
-| **VRR behaviour** | Keep VRR always on, tearing behaviour, monitor detection over DisplayPort / HDMI, refresh limits. |
-| **Cursor & idle** | What happens to the mouse cursor while a game is not delivering frames. |
-| **Smart detection** | Experimental detectors for slideshow-like content and jittery frame times. |
-| **Backups** | Restore points; one is created automatically before every change. |
+실행 파일은 \`bin\Release\net10.0-windows10.0.22621.0\win-x64\publish\\\` 아래에 생성됩니다(실제 출력 경로는 SDK 설정에 따라 달라질 수 있습니다).
 
-Every setting shows its driver default, a *Changed* / *Custom* badge and a *Reset*. Settings that can cause trouble are marked **Use with care** or **Experimental**.
+## 테스트
 
-## Good to know
+\`\`\`powershell
+dotnet test .\tests\NvidiaGsyncTweaks.Tests\NvidiaGsyncTweaks.Tests.csproj -c Release
+\`\`\`
 
-* **Restarting the driver** makes all screens go black for a few seconds and can crash running games, video or GPU programs. Close them first.
-* **Undo:** use *Reset* on a setting, or restore a backup on the **Backups** page. The backups are plain `.reg` files in `%LOCALAPPDATA%\NvidiaGsyncTweaks\Backups`.
-* The switch point does not disappear, it moves to your VRR minimum. A game hovering right around 48 FPS can still flicker, and close to the minimum a late frame can cause a small hitch.
-* Some VRR flicker is inherent to OLED panels at high refresh rates. This tool removes the part caused by the 1x / 2x switching.
-* The settings are undocumented. NVIDIA can change or remove them in any driver update. A clean driver installation may reset them, a normal update keeps them.
-* Made for NVIDIA GPUs with G-SYNC / VRR monitors (the Reddit thread has reports from GTX 16 to RTX 50 series cards). The settings apply to all monitors on that GPU. No effect on AMD or Intel graphics.
+## 안전 및 사용 주의
 
-## Questions
+- 이 앱은 NVIDIA가 공식 문서화하지 않은 드라이버 설정을 변경합니다.
+- 설정을 적용하거나 복원할 때 관리자 권한으로 레지스트리에 기록하고 디스플레이 드라이버를 다시 시작합니다.
+- 드라이버 재시작 중 화면이 잠시 꺼지거나 깜박이고, 실행 중인 게임·동영상·GPU 프로그램이 종료될 수 있습니다.
+- 각 변경 전 복원 지점을 자동 생성합니다. 문제가 발생하면 백업 페이지에서 복원하십시오.
+- 잘못된 타이밍 또는 실험적 값을 설정하면 화면 신호가 사라질 수 있습니다. 변경 전 기본값과 설명을 확인하십시오.
 
-**Why does it need administrator permission?** Only to write the settings to the registry and to restart the display driver. The app itself runs as a normal user; only that one step asks for permission.
+## 파일
 
-**Where are the settings stored?** In the registry key of your graphics adapter: `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\000N`. The app finds the right `000N` through NVAPI and shows it at the top.
+- \`README-en.md\`: 원본 영문 README
+- \`docs/DRIVER-ANALYSIS.md\`: 원본 드라이버 분석
+- \`docs/DRIVER-ANALYSIS-ko.md\`: 한국어 분석 안내
+- \`docs/DEVELOPING.md\`: 원본 개발 및 릴리스 안내
 
-**Is it safe?** The fix itself is a single, well understood value. Every change is saved as a restore point first, and the app only ever writes the values listed in the interface. Still: it is an unofficial tweak of an undocumented driver setting - use it at your own risk.
+## 원본 프로젝트
 
-## For the curious and for developers
-
-* [How the driver decides - reverse-engineering notes for every value](docs/DRIVER-ANALYSIS.md)
-* [Building, testing and releasing](docs/DEVELOPING.md)
+https://github.com/Orbmu2k/NvidiaGsyncTweaks
