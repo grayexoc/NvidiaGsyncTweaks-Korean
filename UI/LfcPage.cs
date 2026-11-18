@@ -18,7 +18,7 @@ internal static class LfcPage
 
     public static Element Build(Ctx c)
     {
-        var current = new FrameSplit(c.EffectiveCurrent(ValueName, FrameSplit.DefaultRaw));
+        var current = new FrameSplit(c.Effective현재(ValueName, FrameSplit.DefaultRaw));
         var pending = new FrameSplit(c.Effective(ValueName, FrameSplit.DefaultRaw));
         bool changed = c.IsPending(ValueName);
 
@@ -34,7 +34,7 @@ internal static class LfcPage
             {
                 case 0: SetRaw(FrameSplit.Default); break;
                 case 1: SetRaw(FrameSplit.LowestMultiplier); break;
-                default: SetRaw(FrameSplit.Make(false, 50, false)); break; // NVIDIA default logic, stickier (value from the community thread)
+                default: SetRaw(FrameSplit.Make(false, 50, false)); break; // NVIDIA 기본값 logic, stickier (value from the community thread)
             }
         }
 
@@ -42,8 +42,8 @@ internal static class LfcPage
             BodyStrong("When should the driver start frame doubling (LFC)?"),
             RadioButtons(
                 [
-                    "NVIDIA default  -  doubling starts when the doubled frame time is closer to the middle of the VRR window",
-                    "Lowest multiplier  -  stay at 1x until the frame rate falls below the VRR minimum   (recommended)",
+                    "NVIDIA 기본값  -  doubling starts when the doubled frame time is closer to the middle of the VRR window",
+                    "Lowest multiplier  -  stay at 1x until the frame rate falls below the VRR 최저 주사율   (recommended)",
                     "Custom  -  keep NVIDIA's logic, but tune how sticky the current multiplier is",
                 ],
                 mode, SetMode),
@@ -56,24 +56,24 @@ internal static class LfcPage
 
         return VStack(16,
             Ui.PageHeader("LFC / frame doubling",
-                "On high-refresh G-SYNC / VRR monitors the NVIDIA driver starts doubling frames long before your monitor's VRR minimum - around 58-65 FPS on 240/360 Hz panels. " +
+                "On high-refresh G-SYNC / VRR monitors the NVIDIA driver starts doubling frames long before your monitor's VRR 최저 주사율 - around 58-65 FPS on 240/360 Hz panels. " +
                 "That flips the panel between ~60 Hz and ~120 Hz and shows up as VRR brightness flicker (OLED) or stutter."),
             modeCard,
-            Preview(c, current, pending),
+            미리 보기(c, current, pending),
             ByRefreshRate(c, pending),
             VStack(16, Catalog.LfcGroups.Select(g => TweakRows.Group(c, g).WithKey(g.Title)).ToArray()),
             Ui.Panel(VStack(6,
                 BodyStrong("Good to know"),
-                Ui.Muted("•  The switch point moves to the VRR minimum; it does not disappear. A game hovering right around that frame rate can still flicker."),
+                Ui.Muted("•  The switch point moves to the VRR 최저 주사율; it does not disappear. A game hovering right around that frame rate can still flicker."),
                 Ui.Muted("•  Close to the minimum a late frame can force a repeat (small hitch). Above ~55 FPS there is plenty of headroom."),
                 Ui.Muted("•  The driver has no switch to turn LFC off, and this choice is the only setting that decides where doubling starts. What moves the thresholds besides it is the window " +
-                         "they are computed from: the refresh rate of your Windows display mode (why 120 Hz 'fixes' it) and the VRR minimum your monitor reports (EDID)."),
-                Ui.Muted("•  Applies to every display on this GPU. The values are read when the driver starts - Apply & restart does that for you."),
+                         "they are computed from: the refresh rate of your Windows display mode (why 120 Hz 'fixes' it) and the VRR 최저 주사율 your monitor reports (EDID)."),
+                Ui.Muted("•  Applies to every display on this GPU. The values are read when the driver starts - 적용 & restart does that for you."),
                 Ui.Muted("•  A clean driver install can reset the value; a normal update keeps it."))));
     }
 
     // ------------------------------------------------------------------------------------------------
-    /// <summary>Where doubling starts for monitors of different max refresh rates (same VRR minimum) - makes the "higher refresh = earlier doubling" rule visible.</summary>
+    /// <summary>Where doubling starts for monitors of different max refresh rates (same VRR 최저 주사율) - makes the "higher refresh = earlier doubling" rule visible.</summary>
     private static Element ByRefreshRate(Ctx c, FrameSplit pending)
     {
         double min = Math.Clamp(c.VrrMinHz, 10, 500);
@@ -86,7 +86,7 @@ internal static class LfcPage
                 columns: [GridSize.Px(150), GridSize.Star(), GridSize.Star()],
                 rows: [GridSize.Auto],
                 Ui.Muted("Monitor max refresh").Grid(row: 0, column: 0),
-                Ui.Muted("NVIDIA default (on / off)").Grid(row: 0, column: 1),
+                Ui.Muted("NVIDIA 기본값 (on / off)").Grid(row: 0, column: 1),
                 Ui.Muted("With your setting").Grid(row: 0, column: 2)),
         };
         foreach (var hz in new double[] { 120, 144, 165, 240, 360, 480 })
@@ -105,13 +105,13 @@ internal static class LfcPage
 
         return Ui.Panel(VStack(10,
             BodyStrong("Where does doubling start on other monitors?"),
-            Ui.Muted($"Frame doubling switches on below the first FPS value (and off again above the second one). VRR minimum: {min:0} Hz. The higher the refresh rate, the earlier NVIDIA's default doubles."),
+            Ui.Muted($"프레임 더블링 switches on below the first FPS value (and off again above the second one). VRR 최저 주사율: {min:0} Hz. The higher the refresh rate, the earlier NVIDIA's default doubles."),
             VStack(2, rows.ToArray())));
     }
 
     private static Element CustomEditor(Ctx c, FrameSplit pending, Action<FrameSplit> setRaw)
     {
-        int bonus = 100 - pending.Stickiness;                   // 0 = no bonus, 15 = NVIDIA default
+        int bonus = 100 - pending.Stickiness;                   // 0 = no bonus, 15 = NVIDIA 기본값
         bonus = pending.NoSticky ? 0 : Math.Clamp(bonus, 0, 100);
         return VStack(8,
             Grid(
@@ -119,7 +119,7 @@ internal static class LfcPage
                 rows: [GridSize.Auto],
                 VStack(2,
                     BodyStrong("Stickiness bonus"),
-                    Ui.Muted("How strongly the driver prefers the multiplier it is already using. 15 % = NVIDIA default, 0 % = none, " +
+                    Ui.Muted("How strongly the driver prefers the multiplier it is already using. 15 % = NVIDIA 기본값, 0 % = none, " +
                              "higher = it holds the current multiplier over a wider FPS range.")).Grid(row: 0, column: 0),
                 Body($"{bonus} %").HAlign(HorizontalAlignment.Right).VAlign(VerticalAlignment.Center).Grid(row: 0, column: 1)),
             Slider(bonus, 0, 100, v => setRaw(FrameSplit.Make(false, 100 - (int)Math.Round(v), false)))
@@ -128,7 +128,7 @@ internal static class LfcPage
     }
 
     // ------------------------------------------------------------------------------------------------
-    private static Element Preview(Ctx c, FrameSplit current, FrameSplit pending)
+    private static Element 미리 보기(Ctx c, FrameSplit current, FrameSplit pending)
     {
         double max = Math.Max(c.MaxHz, 60), min = Math.Clamp(c.VrrMinHz, 10, max - 1);
         var driverDefault = FrameSplit.Default;
@@ -145,7 +145,7 @@ internal static class LfcPage
                 columns: [GridSize.Px(70), GridSize.Star(), GridSize.Star()],
                 rows: [GridSize.Auto],
                 Ui.Muted("FPS").Grid(row: 0, column: 0),
-                Ui.Muted("NVIDIA default").Grid(row: 0, column: 1),
+                Ui.Muted("NVIDIA 기본값").Grid(row: 0, column: 1),
                 Ui.Muted(pending.Raw == driverDefault.Raw ? "Your setting (= default)" : "With your setting").Grid(row: 0, column: 2)),
         };
 
@@ -169,9 +169,9 @@ internal static class LfcPage
             Ui.Muted("Pre-filled from your primary display. Adjust it to match your monitor (VRR range is shown in the monitor OSD / CRU / NVIDIA app)."),
             HStack(16,
                 NumberBox(c.MaxHz, v => { if (!double.IsNaN(v)) c.SetMaxHz(v); }, header: "Max refresh rate (Hz)").Range(60, 1000).SpinButtons().Width(190),
-                NumberBox(c.VrrMinHz, v => { if (!double.IsNaN(v)) c.SetVrrMinHz(v); }, header: "VRR minimum (Hz)").Range(10, 240).SpinButtons().Width(190)),
+                NumberBox(c.VrrMinHz, v => { if (!double.IsNaN(v)) c.SetVrrMinHz(v); }, header: "VRR 최저 주사율 (Hz)").Range(10, 240).SpinButtons().Width(190)),
             HStack(24,
-                VStack(2, Ui.Muted("NVIDIA default"), BodyStrong($"Doubling {Range(onD, offD)}")),
+                VStack(2, Ui.Muted("NVIDIA 기본값"), BodyStrong($"Doubling {Range(onD, offD)}")),
                 VStack(2, Ui.Muted("With your setting"), BodyStrong($"Doubling {Range(onP, offP)}").Foreground(pending.Raw == driverDefault.Raw ? Theme.PrimaryText : Theme.AccentText))),
             VStack(2, rows.ToArray()),
             Ui.Muted("Steady frame rate, coming from a higher FPS. Between the 'on' and 'off' threshold the driver keeps whichever multiplier it is already using.")));
