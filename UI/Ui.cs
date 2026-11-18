@@ -49,8 +49,8 @@ internal static class Ui
 
     public static Element? RiskPill(TweakRisk risk) => risk switch
     {
-        TweakRisk.Caution => Pill("주의해서 사용", "caution"),
-        TweakRisk.실험적 => Pill("실험적", "critical"),
+        TweakRisk.Caution => Pill("Use with care", "caution"),
+        TweakRisk.Experimental => Pill("Experimental", "critical"),
         _ => null,
     };
 
@@ -87,6 +87,6 @@ internal static class Ui
     {
         var b = Button(label, onClick) with { ContentElement = HStack(8, ShieldIcon.Element(), TextBlock(label)) };
         var e = b.AutomationName(label + " (asks for administrator permission)").IsEnabled(enabled);
-        return accent ? e.적용Style("AccentButtonStyle") : e;
+        return accent ? e.ApplyStyle("AccentButtonStyle") : e;
     }
 }
